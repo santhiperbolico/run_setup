@@ -6,7 +6,7 @@ verbose = True
 nvol = 2
 
 submit_jobs = False  # False to only generate scripts
-check_all_jobs = False
+check_all_jobs = True
 clean = False
 
 # Parameter file to use as base
@@ -34,11 +34,15 @@ runs = taurus_galform
 if hpc=='taurus':
     root = '/home2/vgonzalez/Data' 
 
+logdir =  os.path.join(os.getcwd(),'logs')
+    
 # Submit, check or clean
 if clean:
-    su.clean_all_jobs(runs, only_show=True)
+    su.clean_all_jobs(runs,root,sam,param_file,nvol,only_show=True,
+                      logdir=logdir,job_suffix=job_suffix)
 elif check_all_jobs:
-    results = su.check_all_jobs(runs,verbose=True)
+    results = su.check_all_jobs(runs, root, sam, param_file, nvol,
+                                logdir=logdir,job_suffix=job_suffix,verbose=True)
 else:    
     job_count = 0
     for sim, snaps in runs:
@@ -47,16 +51,17 @@ else:
             # Generate SLURM script
             script_path, job_name = su.create_slurm_script(
                 hpc, param_file, simpath, snap, nvol,
-                verbose=verbose, job_suffix=job_suffix
+                logdir=logdir,job_suffix=job_suffix,
+                verbose=verbose
             )
             if verbose: 
                 print(f'  Created script: {script_path}')
                 
-#            # Submit the job
-#            if submit_jobs:
-#                su.submit_slurm_job(script_path, job_name)
-#                job_count += 1
-#    
-#    if submit_jobs and verbose:
-#        print(f'Total jobs submitted: {job_count}')
-#
+            # Submit the job
+            if submit_jobs:
+                su.submit_slurm_job(script_path, job_name)
+                job_count += 1
+    
+    if submit_jobs and verbose:
+        print(f'Total jobs submitted: {job_count}')
+
