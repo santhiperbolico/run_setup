@@ -224,13 +224,13 @@ root_z0 = None
 #          for selections in plots (optional)
 extra_params_names = ['type','mh','xgal','ygal','zgal',
                       'vxgal','vygal','vzgal',
-                      'magK','magR','M_SMBH']
+                      'magK','magR','M_SMBH', "index"]
 extra_params = ['data/type','data/mhhalo',
                 'data/xgal','data/ygal','data/zgal',
                 'data/vxgal','data/vygal','data/vzgal',
                 'data/mag_UKIRT-K_o_tot_ext',
                 'data/mag_SDSSz0.1-r_o_tot_ext',
-                'data/M_SMBH']
+                'data/M_SMBH', "data/index"]
 if attmod == 'ratios':
     for line in att_config:
         extra_params_names.append('ratio_'+line)

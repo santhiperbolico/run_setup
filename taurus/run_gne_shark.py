@@ -186,7 +186,7 @@ r_type = [2,2]
 
 # Dust-attenuated luminosities are calculated if get_attenuation=True
 # line_att=True to apply the extra line attenuation from Saito+2021
-line_att = False
+line_att = True
 
 # Available dust attenuation models
 # 'favole20' (default)
@@ -223,11 +223,11 @@ root_z0 = None
 # WARNING: magK and magR are the dataset names used
 #          for selections in plots (optional)
 extra_params_names = ['type','mh','xgal','ygal','zgal',
-                      'vxgal','vygal','vzgal','M_SMBH']
+                      'vxgal','vygal','vzgal','M_SMBH', "index"]
 extra_params = ['data/type','data/mvir_hosthalo',
                 'data/position_x','data/position_y','data/position_z',
                 'data/velocity_x','data/velocity_y','data/velocity_z',
-                'data/m_bh']
+                'data/m_bh', "data/id_halo"]
 if attmod == 'ratios':
     for line in att_config:
         extra_params_names.append('ratio_'+line)
