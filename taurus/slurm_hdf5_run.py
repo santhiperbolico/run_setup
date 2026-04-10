@@ -15,17 +15,16 @@ job_suffix = None
 
 # Galform in taurus
 hpc = 'taurus'
-sam = 'Shark'
+sam = 'Galform'
 
 simulations = {
     "Galform": {
-        "script": "run_gne_SU1.py",
+        "script": "run_gne_galform.py",
         "runs": [
-            ('SU1', [109, 104, 98, 90, 87, 128, 96, 78]),
-            ('SU1', [128, 90, 87, 96, 78]),
-            ('SU2', [128, 90]),
-            ('UNIT1GPC_fnl0', [128, 90]),
-            ('UNIT1GPC_fnl100', [127, 89]),
+            ('SU1', [109, 104, 98, 87, 128, 96, 90, 78]),
+            ('SU2', [109, 104, 98, 87, 128, 96, 90, 78]),
+            ('UNIT1GPC_fnl0', [90]),
+            ('UNIT1GPC_fnl100', [89]),
             #('SU1', [109, 104, 98, 90, 96, 78]),
             #('SU2', [109, 104, 98, 90, 87]),
             #('UNIT1GPC_fnl0', [98, 109, 87, 90, 104]),
@@ -35,10 +34,10 @@ simulations = {
     "Shark": {
         "script": "run_gne_shark.py",
         "runs": [
-            ('SU1', [128, 90, 87, 96, 78]),
-            ('SU2', [128, 90]),
-            ('UNIT1GPC_fnl0', [128, 90]),
-            ('UNIT1GPC_fnl100', [127, 89]),
+            ('SU1', [109, 104, 98, 87, 128, 96, 90, 78]),
+            ('SU2', [109, 104, 98, 87, 128, 96, 90, 78]),
+            ('UNIT1GPC_fnl0', [90]),
+            ('UNIT1GPC_fnl100', [89]),
         ]
     }
 }
