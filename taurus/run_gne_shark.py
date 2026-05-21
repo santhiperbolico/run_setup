@@ -260,11 +260,11 @@ if isinstance(subvols, int):
     list_subvols = list(range(subvols))
 
 for ivol in list_subvols:
-    infile = root+str(ivol)+'/'+endf
-
+    infile = os.path.join(root+str(ivol),endf)
+    
     infile_z0 = root_z0
     if root_z0 is not None:
-        infile_z0 = root_z0+str(ivol)+'/'+endf
+        infile_z0 = os.path.join(root_z0+str(ivol),endf) 
 
     # Get the redshift, cosmology and volume of the model galaxies
     f = h5py.File(infile) 
@@ -282,11 +282,12 @@ for ivol in list_subvols:
     except:
         p = 1
     f.close()
-    vol = p*boxside**3
+    effvol = p*boxside**3
 
     if get_emission_lines:  
         # Obtain nebular emission lines
-        gne(infile,redshift,snapshot,h0,omega0,omegab,lambda0,vol,mp,
+        gne(infile,redshift,snapshot,h0,omega0,omegab,lambda0,
+            mp,boxside,effvol,
             inputformat=inputformat,outpath=outpath,out_ending=out_endf,
             units_h0=units_h0,units_Gyr=units_Gyr,units_L=units_L,
             model_nH_sfr=model_nH_sfr, model_U_sfr=model_U_sfr,
@@ -317,6 +318,6 @@ for ivol in list_subvols:
                  line_names=['Halpha','Hbeta','NII6584','OIII5007'])
 
 if plot_tests:  # Make test plots
-    #make_testplots(root,endf,snapshot,subvols=subvols,
     make_testplots(snapshot,out_endf,outpath=outpath,
-                   subvols=subvols,gridplots=False,verbose=verbose)
+                   subvols=list_subvols,
+                   gridplots=False,verbose=verbose)
