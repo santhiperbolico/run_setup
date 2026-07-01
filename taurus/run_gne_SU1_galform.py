@@ -18,12 +18,13 @@ AGN = True
 
 ###############################################################
 ### OUTPUT FILES: Default output path is output/
-outpath = '/home2/vgonzalez/Data/Galform/SU1'
+#outpath = '/home2/vgonzalez/Data/Galform/SU1'
+outpath = '/data21/users/vgonzalez/Data/Galform/SU1'
 
 val = None
 
 llim = None
-out_endf = "lines_test"
+out_endf = "lines"
 if val is not None:
     llim = 10**(val-40.)
     out_endf = 'lines_lbol'+str(val)
@@ -34,7 +35,8 @@ if val is not None:
 # Stellar mass (M*) of the galaxy (or disc, SF burst, buldge, etc).
 # Star formation rate (SFR) or 12+log(O/H)
 # Mean metallicity of the cold gas (Z).
-subvols = 2
+nvol_tot = 64
+subvols = 2 #64
 root = os.path.join(outpath,'iz87','ivol')
 endf   = 'gne_input.hdf5'
 
@@ -182,8 +184,6 @@ r_type = [2,2]
 ####################################################
 ##########       Dust attenuation      #############
 ####################################################
-#WARNING: Att w ratios not checked (no adequate ex. data)
-
 # Dust-attenuated luminosities are calculated if get_attenuation=True
 # line_att=True to apply the extra line attenuation from Saito+2021
 line_att = False
@@ -279,11 +279,13 @@ for ivol in list_subvols:
     omegab = header.attrs['omegab']
     lambda0 = header.attrs['lambda0']
     mp = header.attrs['mp_Msunh']
-    try:
-        p = header.attrs['percentage']/100.
-    except:
-        p = 1
+    #try:
+    #    p = header.attrs['percentage']/100.
+    #except:
+    #    p = 1
     f.close()
+
+    p = len(list_subvols)/nvol_tot
     effvol = p*boxside**3
 
     if get_emission_lines:  
