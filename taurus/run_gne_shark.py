@@ -5,22 +5,21 @@ from gne.gne_flux import gne_flux
 from gne.gne_plots import make_testplots
 import os, h5py
 
-verbose = True
-testing = False            # If True: use only 2 subvols
+verbose = False
 
 ### RUN the code with the given parameters and/or make plots
-get_emission_lines = False # Obtain nebular emission lines
-get_attenuation = False
-get_flux = False
-plot_tests = True
+get_emission_lines = True # Obtain nebular emission lines
+get_attenuation = True
+get_flux = True
 
 # Calculate emission from AGNs: AGN = True
 AGN = True
 
 ###############################################################
 ### OUTPUT FILES: Default output path is output/
-#outpath = '/home2/vgonzalez/Data/Shark/SU1'
 outpath = '/data21/users/vgonzalez/Data/Shark/SU1'
+h0 = 0.6774
+
 
 val = None
 llim = None
@@ -35,12 +34,8 @@ if val is not None:
 # Stellar mass (M*) of the galaxy (or disc, SF burst, buldge, etc).
 # Star formation rate (SFR) or 12+log(O/H)
 # Mean metallicity of the cold gas (Z).
-nvol_tot = 64
-subvols = nvol_tot
-if testing:
-    subvols = 2
-
-root = os.path.join(outpath,'iz87','ivol')
+#root = os.path.join(outpath,'iz87','ivol')
+root = os.path.join(outpath,'iz96','ivol')
 endf   = 'gne_input.hdf5'
 
 ### INPUT FORMAT ('txt' for text files; 'hdf5' for HDF5 files)
@@ -246,9 +241,8 @@ extra_params_labels = extra_params_names
 # Paramter to impose cuts
 # cutcols = ['data/Lbol_AGN']
 cutcols = None
-# List of minimum values. None for no inferior limit.
-h0 = 0.6774
 
+# List of minimum values. None for no inferior limit.
 mincuts = [None]
 if llim is not None:
     mincuts = [llim*h0*h0]
@@ -259,69 +253,65 @@ maxcuts = [None]
 ##################################################################
 #############    Run the code and/or make plots   ################
 ##################################################################
-list_subvols = subvols
-if isinstance(subvols, int):
-    list_subvols = list(range(subvols))
+ivol_inx = os.environ.get('GNE_SUBVOL_INDEX')
+if ivol_inx is None:
+    ivol = 49
+else:
+    ivol = int(ivol_inx)
 
-for ivol in list_subvols:
-    infile = os.path.join(root+str(ivol),endf)
-    
-    infile_z0 = root_z0
-    if root_z0 is not None:
-        infile_z0 = os.path.join(root_z0+str(ivol),endf) 
+infile = os.path.join(root+str(ivol),endf)
+infile_z0 = root_z0
+if root_z0 is not None:
+    infile_z0 = os.path.join(root_z0+str(ivol),endf) 
 
-    # Get the redshift, cosmology and volume of the model galaxies
-    f = h5py.File(infile) 
-    header = f['header'] #; print(list(header.attrs.keys()))
-    redshift = header.attrs['redshift']
-    snapshot = header.attrs['snapnum']
-    boxside = header.attrs['bside_Mpch']
-    h0 = header.attrs['h0']
-    omega0 = header.attrs['omega0']
-    omegab = header.attrs['omegab']
-    lambda0 = header.attrs['lambda0']
-    mp = header.attrs['mp_Msunh']
-    f.close()
-
+# Get the redshift, cosmology and volume of the model galaxies
+f = h5py.File(infile) 
+header = f['header'] #; print(list(header.attrs.keys()))
+redshift = header.attrs['redshift']
+snapshot = header.attrs['snapnum']
+boxside = header.attrs['bside_Mpch']
+h0 = header.attrs['h0']
+omega0 = header.attrs['omega0']
+omegab = header.attrs['omegab']
+lambda0 = header.attrs['lambda0']
+mp = header.attrs['mp_Msunh']
+try:
+    p = header.attrs['percentage']/100.
+except:
     p = 1
-    if testing:
-        p = len(list_subvols)/nvol_tot
-    effvol = p*boxside**3
+f.close()
 
-    if get_emission_lines:  
-        # Obtain nebular emission lines
-        gne(infile,redshift,snapshot,h0,omega0,omegab,lambda0,
-            mp,boxside,effvol,
-            inputformat=inputformat,outpath=outpath,out_ending=out_endf,
-            units_h0=units_h0,units_Gyr=units_Gyr,units_L=units_L,
-            model_nH_sfr=model_nH_sfr, model_U_sfr=model_U_sfr,
-            photmod_sfr=photmod_sfr,
-            m_sfr_z=m_sfr_z,mtot2mdisk=mtot2mdisk,
-            inoh=inoh,IMF = IMF,
-            AGN=AGN,photmod_agn=photmod_agn,
-            Zgas_NLR=Zgas_NLR,Z_correct_grad=Z_correct_grad,
-            model_U_agn=model_U_agn,
-            mgas_r=mgas_r,mgasr_type=mgasr_type,r_type=r_type,
-            model_spec_agn=model_spec_agn,
-            Lagn_inputs=Lagn_inputs, Lagn_params=Lagn_params,
-            infile_z0=infile_z0, 
-            extra_params=extra_params,
-            extra_params_names=extra_params_names,
-            extra_params_labels=extra_params_labels,
-            cutcols=cutcols, mincuts=mincuts, maxcuts=maxcuts,
-            verbose=verbose)
+effvol = p*boxside**3
 
-    if get_attenuation: # Obtain dust-attenuated luminosities
-        gne_att(infile,outpath=outpath,out_ending=out_endf,
-                attmod=attmod,line_att=line_att,
-                att_config=att_config,verbose=verbose)
+if get_emission_lines:  
+    # Obtain nebular emission lines
+    gne(infile,redshift,snapshot,h0,omega0,omegab,lambda0,
+        mp,boxside,effvol,
+        inputformat=inputformat,outpath=outpath,out_ending=out_endf,
+        units_h0=units_h0,units_Gyr=units_Gyr,units_L=units_L,
+        model_nH_sfr=model_nH_sfr, model_U_sfr=model_U_sfr,
+        photmod_sfr=photmod_sfr,
+        m_sfr_z=m_sfr_z,mtot2mdisk=mtot2mdisk,
+        inoh=inoh,IMF = IMF,
+        AGN=AGN,photmod_agn=photmod_agn,
+        Zgas_NLR=Zgas_NLR,Z_correct_grad=Z_correct_grad,
+        model_U_agn=model_U_agn,
+        mgas_r=mgas_r,mgasr_type=mgasr_type,r_type=r_type,
+        model_spec_agn=model_spec_agn,
+        Lagn_inputs=Lagn_inputs, Lagn_params=Lagn_params,
+        infile_z0=infile_z0, 
+        extra_params=extra_params,
+        extra_params_names=extra_params_names,
+        extra_params_labels=extra_params_labels,
+        cutcols=cutcols, mincuts=mincuts, maxcuts=maxcuts,
+        verbose=verbose)
 
-    if get_flux: # Calculate fluxes from luminosities
-        gne_flux(infile,outpath=outpath,out_ending=out_endf,
-                 verbose=verbose,
-                 line_names=['Halpha','Hbeta','NII6584','OIII5007'])
+if get_attenuation: # Obtain dust-attenuated luminosities
+    gne_att(infile,outpath=outpath,out_ending=out_endf,
+            attmod=attmod,line_att=line_att,
+            att_config=att_config,verbose=verbose)
 
-if plot_tests:  # Make test plots
-    make_testplots(snapshot,out_endf,outpath=outpath,
-                   subvols=list_subvols,
-                   gridplots=False,verbose=verbose)
+if get_flux: # Calculate fluxes from luminosities
+    gne_flux(infile,outpath=outpath,out_ending=out_endf,
+             verbose=verbose,
+             line_names=['Halpha','Hbeta','NII6584','OIII5007'])
