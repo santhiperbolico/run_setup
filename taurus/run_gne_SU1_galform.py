@@ -6,11 +6,12 @@ from gne.gne_plots import make_testplots
 import os, h5py
 
 verbose = True
+testing = False            # If True: use only 2 subvols
+
 ### RUN the code with the given parameters and/or make plots
-testing = False            # If True: use only the first 50 elements
-get_emission_lines = True # Obtain nebular emission lines
-get_attenuation = True
-get_flux = True
+get_emission_lines = False # Obtain nebular emission lines
+get_attenuation = False
+get_flux = False
 plot_tests = True
 
 # Calculate emission from AGNs: AGN = True
@@ -22,7 +23,6 @@ AGN = True
 outpath = '/data21/users/vgonzalez/Data/Galform/SU1'
 
 val = None
-
 llim = None
 out_endf = "lines"
 if val is not None:
@@ -36,7 +36,10 @@ if val is not None:
 # Star formation rate (SFR) or 12+log(O/H)
 # Mean metallicity of the cold gas (Z).
 nvol_tot = 64
-subvols = 2 #64
+subvols = nvol_tot
+if testing:
+    subvols = 2
+    
 root = os.path.join(outpath,'iz87','ivol')
 endf   = 'gne_input.hdf5'
 
@@ -279,13 +282,11 @@ for ivol in list_subvols:
     omegab = header.attrs['omegab']
     lambda0 = header.attrs['lambda0']
     mp = header.attrs['mp_Msunh']
-    #try:
-    #    p = header.attrs['percentage']/100.
-    #except:
-    #    p = 1
     f.close()
 
-    p = len(list_subvols)/nvol_tot
+    p = 1
+    if testing:
+        p = len(list_subvols)/nvol_tot
     effvol = p*boxside**3
 
     if get_emission_lines:  
@@ -310,7 +311,7 @@ for ivol in list_subvols:
             extra_params_names=extra_params_names,
             extra_params_labels=extra_params_labels,
             cutcols=cutcols, mincuts=mincuts, maxcuts=maxcuts,
-            testing=testing, verbose=verbose)
+            verbose=verbose)
 
     if get_attenuation: # Obtain dust-attenuated luminosities
         gne_att(infile,outpath=outpath,

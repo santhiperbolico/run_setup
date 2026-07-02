@@ -3,9 +3,9 @@ import os
 import gne.gne_slurm as sl
 
 verbose = True
-nvol = 2 #64
+subvols = 64
 
-submit_jobs = False    # False to only generate scripts
+submit_jobs = True    # False to only generate scripts (sbatch *.sh)
 check_all_jobs = False # Check slurm queues
 clean = False          # Clean logs
 
@@ -15,13 +15,13 @@ job_suffix = None
 
 # Taurus
 hpc = 'taurus'
-sam = 'Shark'
+sam = 'Galform' #'Shark'
 
 simulations = {
     "Galform": {
         "script": "run_gne_SU1_galform.py",
         "runs": [
-            ('SU1', [96]),
+            ('SU1', [87]),
             #('SU1', [109, 104, 98, 90, 87, 128, 96, 78]),
             #('SU1', [128, 90, 87, 96, 78]),
             #('SU2', [90]),
@@ -36,7 +36,7 @@ simulations = {
     "Shark": {
         "script": "run_gne_shark.py",
         "runs": [
-            ('SU1', [96]),
+            ('SU1', [87]),
             #('SU1', [128, 90, 87, 96, 78]),
             #('SU2', [128, 90]),
             #('UNIT1GPC_fnl0', [128, 90]),
@@ -59,10 +59,10 @@ logdir =  os.path.join(os.getcwd(),'logs')
     
 # Submit, check or clean
 if clean:
-    sl.clean_all_jobs(runs,root,sam,param_file,nvol,only_show=True,
+    sl.clean_all_jobs(runs,root,sam,param_file,subvols,only_show=True,
                       logdir=logdir,job_suffix=job_suffix)
 elif check_all_jobs:
-    results = sl.check_all_jobs(runs, root, sam, param_file, nvol,
+    results = sl.check_all_jobs(runs, root, sam, param_file, subvols,
                                 logdir=logdir,job_suffix=job_suffix,verbose=True)
 else:    
     job_count = 0
@@ -71,7 +71,7 @@ else:
         for snap in snaps:
             # Generate SLURM script
             script_path, job_name = sl.create_slurm_script(
-                hpc, param_file, simpath, snap, nvol,
+                hpc, param_file, simpath, snap, subvols,
                 logdir=logdir,job_suffix=job_suffix,
                 verbose=verbose
             )
@@ -80,8 +80,9 @@ else:
                 
             # Submit the job
             if submit_jobs:
-                sl.submit_slurm_job(script_path, job_name)
-                job_count += 1
+                job_id = sl.submit_slurm_job(script_path,job_name)
+                if job_id is not None:
+                    job_count += 1
     
     if submit_jobs and verbose:
         print(f'Total jobs submitted: {job_count}')
