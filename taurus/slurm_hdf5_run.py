@@ -3,14 +3,13 @@ import os
 import gne.gne_slurm as sl
 
 verbose = True
-subvols = 64
+subvols = '4-5'      # Array of subvols for slurm
 
 submit_jobs = True    # False to only generate scripts (sbatch *.sh)
 check_all_jobs = False # Check slurm queues
 clean = False          # Clean logs
 
-# Optional: user-defined suffix for job names
-# If None, suffix is derived from cutcols/mincuts/maxcuts in param_file
+# Optional suffix for job names
 job_suffix = None 
 
 # Taurus
@@ -19,9 +18,9 @@ sam = 'Galform' #'Shark'
 
 simulations = {
     "Galform": {
-        "script": "run_gne_SU1_galform.py",
+        "script": "run_gne_galform.py",
         "runs": [
-            ('SU1', [87]),
+            ('SU1', [96]),
             #('SU1', [109, 104, 98, 90, 87, 128, 96, 78]),
             #('SU1', [128, 90, 87, 96, 78]),
             #('SU2', [90]),
@@ -36,7 +35,7 @@ simulations = {
     "Shark": {
         "script": "run_gne_shark.py",
         "runs": [
-            ('SU1', [87]),
+            ('SU1', [96]),
             #('SU1', [128, 90, 87, 96, 78]),
             #('SU2', [128, 90]),
             #('UNIT1GPC_fnl0', [128, 90]),
@@ -70,17 +69,16 @@ else:
         simpath = os.path.join(root,sam,sim)
         for snap in snaps:
             # Generate SLURM script
-            script_path, job_name = sl.create_slurm_script(
-                hpc, param_file, simpath, snap, subvols,
+            script_path = sl.create_slurm_script(
+                hpc, param_file, simpath, sam, snap, subvols,
                 logdir=logdir,job_suffix=job_suffix,
-                verbose=verbose
-            )
+                verbose=verbose)
             if verbose: 
                 print(f'  Created script: {script_path}')
                 
             # Submit the job
             if submit_jobs:
-                job_id = sl.submit_slurm_job(script_path,job_name)
+                job_id = sl.submit_slurm_job(script_path,verbose=verbose)
                 if job_id is not None:
                     job_count += 1
     

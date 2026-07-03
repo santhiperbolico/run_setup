@@ -18,15 +18,8 @@ AGN = True
 ###############################################################
 ### OUTPUT FILES: Default output path is output/
 outpath = '/data21/users/vgonzalez/Data/Galform/SU1'
-h0 = 0.6774
 
-val = None
-llim = None
 out_endf = "lines"
-if val is not None:
-    llim = 10**(val-40.)
-    out_endf = 'lines_lbol'+str(val)
-
 ###############################################################
 ### INPUT FILES: given as a root, ending and number of subvolumes
 # Input files are expected to have, AT LEAST:
@@ -244,8 +237,6 @@ extra_params_labels = extra_params_names
 cutcols = None
 # List of minimum values. None for no inferior limit.
 mincuts = [None]
-if llim is not None:
-    mincuts = [llim*h0*h0]
     
 # List of maximum values. None for no superior limit.
 maxcuts = [None]
