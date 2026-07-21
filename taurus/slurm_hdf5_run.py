@@ -6,8 +6,6 @@ verbose = True
 subvols = '4-5'      # Array of subvols for slurm
 
 submit_jobs = True    # False to only generate scripts (sbatch *.sh)
-check_all_jobs = False # Check slurm queues
-clean = False          # Clean logs
 
 # Optional suffix for job names
 job_suffix = None 
@@ -56,32 +54,25 @@ if hpc=='taurus':
 
 logdir =  os.path.join(os.getcwd(),'logs')
     
-# Submit, check or clean
-if clean:
-    sl.clean_all_jobs(runs,root,sam,param_file,subvols,only_show=True,
-                      logdir=logdir,job_suffix=job_suffix)
-elif check_all_jobs:
-    results = sl.check_all_jobs(runs, root, sam, param_file, subvols,
-                                logdir=logdir,job_suffix=job_suffix,verbose=True)
-else:    
-    job_count = 0
-    for sim, snaps in runs:
-        simpath = os.path.join(root,sam,sim)
-        for snap in snaps:
-            # Generate SLURM script
-            script_path = sl.create_slurm_script(
-                hpc, param_file, simpath, sam, snap, subvols,
-                logdir=logdir,job_suffix=job_suffix,
-                verbose=verbose)
-            if verbose: 
-                print(f'  Created script: {script_path}')
-                
-            # Submit the job
-            if submit_jobs:
-                job_id = sl.submit_slurm_job(script_path,verbose=verbose)
-                if job_id is not None:
-                    job_count += 1
-    
-    if submit_jobs and verbose:
-        print(f'Total jobs submitted: {job_count}')
+# Generate scripts and submit
+job_count = 0
+for sim, snaps in runs:
+    simpath = os.path.join(root,sam,sim)
+    for snap in snaps:
+        # Generate SLURM script
+        script_path = sl.create_slurm_script(
+            hpc, param_file, simpath, sam, snap, subvols,
+            logdir=logdir,job_suffix=job_suffix,
+            verbose=verbose)
+        if verbose: 
+            print(f'  Created script: {script_path}')
+            
+        # Submit the job
+        if submit_jobs:
+            job_id = sl.submit_slurm_job(script_path,verbose=verbose)
+            if job_id is not None:
+                job_count += 1
+
+if submit_jobs and verbose:
+    print(f'Total jobs submitted: {job_count}')
 
