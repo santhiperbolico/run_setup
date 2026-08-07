@@ -9,7 +9,7 @@ clean = False   # Clean logs
 
 # Options
 model = 'Galform' #'Shark'
-snap = 96
+snap = 128
 job_suffix = None 
   
 # Check or clean
@@ -19,4 +19,4 @@ if check:
                                 job_suffix=job_suffix,verbose=True)
 if clean:
     sl.clean_all_jobs(model,snap,logdir,job_suffix=job_suffix,
-                      only_show=True,verbose=verbose)
+                      only_show=False,verbose=verbose)

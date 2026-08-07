@@ -3,7 +3,7 @@ import os
 import gne.gne_slurm as sl
 
 verbose = True
-subvols = '4-5'      # Array of subvols for slurm
+subvols = '0-63'      # Array of subvols for slurm
 
 submit_jobs = True    # False to only generate scripts (sbatch *.sh)
 
@@ -16,9 +16,10 @@ sam = 'Galform' #'Shark'
 
 simulations = {
     "Galform": {
-        "script": "run_gne_galform.py",
+        #"script": "run_gne_galform.py",
+        "script": "run_gne_photio.py",
         "runs": [
-            ('SU1', [96]),
+            ('SU1', [87, 96, 128]),
             #('SU1', [109, 104, 98, 90, 87, 128, 96, 78]),
             #('SU1', [128, 90, 87, 96, 78]),
             #('SU2', [90]),

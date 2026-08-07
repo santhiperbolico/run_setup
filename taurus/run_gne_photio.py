@@ -5,6 +5,14 @@ from gne.gne_flux import gne_flux
 from gne.gne_plots import make_testplots
 import os, h5py
 
+### Variations on photoionisation parameters #####
+out_endf = "var_alpha_NLR_1_2"
+alpha_NLR = -1.2   # Default=-1.7; [-1.2,-1.4,-2]
+xid_NLR   = 0.5    # Default=0.5; [0.1,0.3]
+xid_sfr   = 0.2    # Default=0.3; [0.1,0.5]
+co_sfr    = 1      # Default=1; [0.1,0.27,0.52,1.40]
+###############################################################
+
 verbose = False
 
 ### RUN the code with the given parameters and/or make plots
@@ -13,15 +21,12 @@ get_attenuation = True
 get_flux = True
 
 # Calculate emission from AGNs: AGN = True
-#AGN = True
-AGN = False
+AGN = True
 
 ###############################################################
 ### OUTPUT FILES: Default output path is output/
 outpath = '/data21/users/vgonzalez/Data/Galform/SU1'
 
-#out_endf = "lines"
-out_endf = "lines_noAGN"
 ###############################################################
 ### INPUT FILES: given as a root, ending and number of subvolumes
 # Input files are expected to have, AT LEAST:
@@ -270,6 +275,10 @@ if get_emission_lines:
         inoh=inoh,IMF = IMF,
         AGN=AGN,photmod_agn=photmod_agn,
         Zgas_NLR=Zgas_NLR,Z_correct_grad=Z_correct_grad,
+        alpha_NLR=alpha_NLR,
+        xid_NLR=xid_NLR,
+        xid_sfr=xid_sfr,
+        co_sfr=co_sfr,
         model_U_agn=model_U_agn,
         mgas_r=mgas_r,mgasr_type=mgasr_type,r_type=r_type,
         model_spec_agn=model_spec_agn,
