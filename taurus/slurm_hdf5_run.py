@@ -70,7 +70,7 @@ else:
         simpath = os.path.join(root,sam,sim)
         for snap in snaps:
             # Generate SLURM script
-            script_path, job_name = su.create_slurm_script(
+            script_path = su.create_slurm_script(
                 hpc, param_file, simpath, sam, snap, str(nvol),
                 logdir=logdir,job_suffix=job_suffix,
                 verbose=verbose
@@ -80,7 +80,7 @@ else:
                 
             # Submit the job
             if submit_jobs:
-                su.submit_slurm_job(script_path, job_name)
+                su.submit_slurm_job(script_path, verbose=verbose)
                 job_count += 1
     
     if submit_jobs and verbose:
