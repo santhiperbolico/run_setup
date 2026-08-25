@@ -1,8 +1,12 @@
+
+import numpy as np
 import gne.gne_const as const
 from gne.gne import gne
 from gne.gne_att import gne_att
 from gne.gne_flux import gne_flux
 from gne.gne_plots import make_testplots
+from gne.gne_stats import read_previous_redshift
+from gne.gne_cosmology import set_cosmology
 import os, h5py
 
 verbose = True
@@ -11,14 +15,14 @@ testing = False            # If True: use only the first 50 elements
 get_emission_lines = True # Obtain nebular emission lines
 get_attenuation = True
 get_flux = True
-plot_tests = True
+plot_tests = False
 
 # Calculate emission from AGNs: AGN = True
 AGN = True
 
 ###############################################################
 ### OUTPUT FILES: Default output path is output/
-outpath = '/home2/vgonzalez/Data/Shark/SU1'
+outpath = '/data21/users/vgonzalez/Data/Shark/SU1'
 
 val = None
 
@@ -34,9 +38,14 @@ if val is not None:
 # Stellar mass (M*) of the galaxy (or disc, SF burst, buldge, etc).
 # Star formation rate (SFR) or 12+log(O/H)
 # Mean metallicity of the cold gas (Z).
-subvols = 2
-root = os.path.join(outpath,'iz87','ivol')
+subvols = 64
+root = os.path.join(outpath,'iz97','ivol')
 endf   = 'gne_input.hdf5'
+
+# Redhift list with the following columns: snaphot, redshift, factor_scale
+redshift_path = '/data5/UNITSIM/fixedAmp_InvPhase_001/redshift_list.txt'
+
+redshift_list = np.loadtxt(redshift_path, dtype=float)
 
 ### INPUT FORMAT ('txt' for text files; 'hdf5' for HDF5 files)
 inputformat = 'hdf5'
@@ -112,46 +121,47 @@ model_U_agn    = 'panuzzo03'
 
 # spec: model for the spectral distribution of the AGN
 model_spec_agn = 'feltre16'
-    
+   
 # The AGNs bolometric luminosity, Lagn, is needed.
 # This value can be either firectly input or calculated.
 # The way of obtaining Lagn is indicated in Lagn_inputs.
 # The calcultions require different black hole (BH) parameters.
 # Lagn_inputs='Lagn' if Lagn in input
 #            in erg/s,h^-2erg/s,1e40erg/s,1e40(h^-2)erg/s
-#            Lagn_params=[Lagn, Mbh] 
-# Lagn_inputs='Mdot_hh' for a calculation from
+#            Lagn_params=[Lagn] 
+# Lagn_inputs='Hirschmann+14' for a calculation from
 #            the mass accretion rate of the BH, Mdot,
 #            the BH mass, Mbh,
-#            and, as an optional input, the BH spin, Mspin. 
-#            Lagn_params=[Mdot,Mbh] or [Mdot,Mbh,Mspin]
-# Lagn_inputs='Mdot_stb_hh' for a calculation from
-#            the mass accretion rate during the last starburst, Mdot_stb,
+#            Lagn_params=[Mdot,Mbh]
+# Lagn_inputs='Griffin+19' for a calculation from
+#            the BH mass, Mbh,
 #            the hot halo or radio mass accretion, Mdot_hh,
-#            the BH mass, Mbh,
-#            and, as an optional input, the BH spin, Mspin. 
-#            Lagn_params=[Mdot_stb,Mdot_hh,Mbh] or [Mdot_stb,Mdot_hh,Mbh,Mspin]
-# Lagn_inputs='radio_mode' for a calculation from
-#            the mass of the hot gas, Mhot,
-#            the BH mass, Mbh,
-#            and, as an optional input, the BH spin, Mspin. 
-#            Lagn_params=[Mhot,Mbh] or [Mhot,Mbh,Mspin]
-# Lagn_inputs='quasar_mode' for a calculation from
-#            the mass of the bulge, Mbulge,
-#            the half-mass radius of the bulge, rbulge,
-#            the circular velocity of the bulge, vbulge,
-#            the BH mass, Mbh,
-#            and, as an optional input, the BH spin, Mspin. 
-#            Lagn_params=[Mbulge,rbulge,vbulge,Mbh,(Mspin)]
-# Lagn_inputs='complete' for a calculation from
-#            the mass of the bulge, Mbulge,
-#            the half-mass radius of the bulge, rbulge,
-#            the circular velocity of the bulge, vbulge,
-#            the mass of the hot gas, Mg,
-#            the BH mass, Mbh,
-#            and, as an optional input, the BH spin, Mspin. 
-#            Lagn_params=[Mbulge,rbulge,vbulge,Mhot,Mbh,(Mspin)]
-Lagn_inputs = 'Lagn'; Lagn_params=['data/bolometric_luminosity_agn','data/mstars_bulge']
+#            the mass accretion rate during the last starburst, Mdot_stb,
+#            Lagn_params=[Mbh,Mdot_hh,Mdot_stb]
+
+Lagn_inputs = 'Griffin+19'; Lagn_params=[
+    'data/m_bh', 
+    'data/bh_accretion_rate_hh', 
+    'data/bh_accretion_rate_sb',
+    ]
+
+# The AGN quantities are "instantaneous" (active at the snapshot)
+# if Lagn_insta is True, Lagn_insta_params are the parameters to obtain the instantaneous bolometric luminosity.
+# Lagn_insta_params should have the following parameters:
+# - rgas_bulge: radius of the gas in the bulge (Mpc)
+# - mgas_bulge: mass of the gas in the bulge (Msun)
+# - mstars_bulge: mass of the stars in the bulge (Msun)
+# - v_bulge: velocity of the bulge (km/s). 
+# If v_bulge is included the t_bulge is calculated only using rgas_bulge and v_bulge.
+Lagn_insta = False; Lagn_insta_params=[
+     "data/rgas_bulge",
+     "data/mgas_bulge",
+     "data/mstars_bulge",
+]
+# Ratio of lifetime of AGN episode to bulge dynamical timescale. 
+# - The fiducial value used in Shark is 1.0.
+# - If is None we use c.fq as the weights.
+tau_fold = 1.0
 
 ###################################################################
 ########  Filling factor and Cardelli's law parameters  ###########
@@ -223,11 +233,12 @@ root_z0 = None
 # WARNING: magK and magR are the dataset names used
 #          for selections in plots (optional)
 extra_params_names = ['type','mh','xgal','ygal','zgal',
-                      'vxgal','vygal','vzgal','M_SMBH', "index"]
+                      'vxgal','vygal','vzgal','M_SMBH', "index", 'mstars_bulge', 'mstars_disk', 'bh_accretion_rate_hh', 'bh_accretion_rate_sb', 'rgas_bulge']
 extra_params = ['data/type','data/mvir_hosthalo',
                 'data/position_x','data/position_y','data/position_z',
                 'data/velocity_x','data/velocity_y','data/velocity_z',
-                'data/m_bh', "data/id_halo"]
+                'data/m_bh', "data/id_halo",
+                'data/mstars_bulge', 'data/mstars_disk', 'data/bh_accretion_rate_hh', 'data/bh_accretion_rate_sb', 'data/rgas_bulge']
 if attmod == 'ratios':
     for line in att_config:
         extra_params_names.append('ratio_'+line)
@@ -277,17 +288,28 @@ for ivol in list_subvols:
     omegab = header.attrs['omegab']
     lambda0 = header.attrs['lambda0']
     mp = header.attrs['mp_Msunh']
+
+    set_cosmology(h0=h0,omega0=omega0,omegab=omegab,lambda0=lambda0)
+    print("Cosmology set to h0={}, omega0={}, omegab={}, lambda0={}".format(h0,omega0,omegab,lambda0))
+
     try:
         p = header.attrs['percentage']/100.
     except:
         p = 1
     f.close()
-    vol = p*boxside**3
+    effvol = p*boxside**3
+
+    # Try to find the redshift of the previous snapshot
+    redshift_previous = read_previous_redshift(redshift_path, snapshot)
+    if redshift_previous is  None:
+        print(f"Redshift of the previous snapshot not found for snapshot {snapshot}")
+
 
     if get_emission_lines:  
         # Obtain nebular emission lines
-        gne(infile,redshift,snapshot,h0,omega0,omegab,lambda0,vol,mp,
-            inputformat=inputformat,outpath=outpath,out_ending=out_endf,
+        gne(infile,redshift,snapshot,h0,omega0,omegab,lambda0,
+            mp,boxside,effvol,
+            inputformat=inputformat,outpath=outpath,
             units_h0=units_h0,units_Gyr=units_Gyr,units_L=units_L,
             model_nH_sfr=model_nH_sfr, model_U_sfr=model_U_sfr,
             photmod_sfr=photmod_sfr,
@@ -299,12 +321,14 @@ for ivol in list_subvols:
             mgas_r=mgas_r,mgasr_type=mgasr_type,r_type=r_type,
             model_spec_agn=model_spec_agn,
             Lagn_inputs=Lagn_inputs, Lagn_params=Lagn_params,
-            infile_z0=infile_z0, 
+            Lagn_insta=Lagn_insta, Lagn_insta_params=Lagn_insta_params,
+            tau_fold=tau_fold,
+            infile_z0=infile_z0, redshift_previous=redshift_previous,
             extra_params=extra_params,
             extra_params_names=extra_params_names,
             extra_params_labels=extra_params_labels,
             cutcols=cutcols, mincuts=mincuts, maxcuts=maxcuts,
-            testing=testing,verbose=verbose)
+            testing=testing,verbose=verbose, out_ending=out_endf)
 
     if get_attenuation: # Obtain dust-attenuated luminosities
         gne_att(infile,outpath=outpath,out_ending=out_endf,

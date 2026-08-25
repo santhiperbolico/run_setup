@@ -6,7 +6,7 @@ verbose = True
 nvol = 64
 
 submit_jobs = True  # False to only generate scripts
-check_all_jobs = True
+check_all_jobs = False
 clean = False
 
 # Optional: user-defined suffix for job names
@@ -21,12 +21,10 @@ simulations = {
     "Galform": {
         "script": "run_gne_galform.py",
         "runs": [
-            ('SU1', [109, 104, 98, 87, 128, 96, 90, 78]),
-            ('SU2', [109, 104, 98, 87, 128, 96, 90, 78]),
-            ('UNIT1GPC_fnl0', [90]),
-            ('UNIT1GPC_fnl100', [89]),
-            #('SU1', [109, 104, 98, 90, 96, 78]),
-            #('SU2', [109, 104, 98, 90, 87]),
+            ('UNIT1GPC_fnl0', [90, 87, 86, 81, 74, 65, 98, 104, 109]),
+            ('UNIT1GPC_fnl100', [89, 86, 85, 80, 73, 64, 97, 103, 108]),
+            ('SU1', [90, 87, 86, 81, 74, 65, 96, 98, 104, 109]),
+            ('SU2', [90, 87, 86, 81, 74, 65, 96, 98, 104, 109]),
             #('UNIT1GPC_fnl0', [98, 109, 87, 90, 104]),
             #('UNIT1GPC_fnl100', [108, 103, 97, 89, 86]),
         ]
@@ -34,10 +32,11 @@ simulations = {
     "Shark": {
         "script": "run_gne_shark.py",
         "runs": [
-            ('SU1', [109, 104, 98, 87, 128, 96, 90, 78]),
-            ('SU2', [109, 104, 98, 87, 128, 96, 90, 78]),
-            ('UNIT1GPC_fnl0', [90]),
-            ('UNIT1GPC_fnl100', [89]),
+            ('UNIT1GPC_fnl0', [90, 87, 86, 81, 74, 65, 98, 104, 109]),
+            ('UNIT1GPC_fnl100', [89, 86, 85, 80, 73, 64, 97, 103, 108]),
+            ('SU1', [90, 87, 86, 81, 74, 65, 96, 98, 104, 109]),
+            ('SU2', [90, 87, 86, 81, 74, 65, 96, 98, 104, 109]),
+            # ('SU1', [65])
         ]
     }
 }
@@ -50,7 +49,7 @@ param_file = os.path.join(os.getcwd(),simulations[sam]["script"])
 # Select which runs to process
 runs = simulations[sam]["runs"]
 if hpc=='taurus':
-    root = '/home2/vgonzalez/Data' 
+    root = '/data21/users/vgonzalez/Data' 
 
 logdir =  os.path.join(os.getcwd(),'logs')
     
@@ -59,8 +58,12 @@ if clean:
     su.clean_all_jobs(runs,root,sam,param_file,nvol,only_show=True,
                       logdir=logdir,job_suffix=job_suffix)
 elif check_all_jobs:
-    results = su.check_all_jobs(runs, root, sam, param_file, nvol,
-                                logdir=logdir,job_suffix=job_suffix,verbose=True)
+    # results = su.check_all_jobs(runs, root, sam, param_file, str(nvol),
+    #                             logdir=logdir,job_suffix=job_suffix,verbose=True)
+    for sim, snaps in runs:
+        simpath = os.path.join(root,sam,sim)
+        for snap in snaps:
+            results = su.check_all_jobs(sam, snap, logdir=logdir,job_suffix=job_suffix,verbose=True)
 else:    
     job_count = 0
     for sim, snaps in runs:
@@ -68,7 +71,7 @@ else:
         for snap in snaps:
             # Generate SLURM script
             script_path, job_name = su.create_slurm_script(
-                hpc, param_file, simpath, snap, nvol,
+                hpc, param_file, simpath, sam, snap, str(nvol),
                 logdir=logdir,job_suffix=job_suffix,
                 verbose=verbose
             )
