@@ -138,6 +138,12 @@ model_spec_agn = 'feltre16'
 #            the hot halo or radio mass accretion, Mdot_hh,
 #            the mass accretion rate during the last starburst, Mdot_stb,
 #            Lagn_params=[Mbh,Mdot_hh,Mdot_stb]
+# Lagn_inputs='Bravo+25' for a calculation from
+#            the mass accretion rate during the last starburst, Mdot_stb,
+#            the hot halo or radio mass accretion, Mdot_hh,
+#            the BH mass, Mbh,
+#            and, as an optional input, the BH spin, Mspin. 
+#            Lagn_params=[Mdot_stb,Mdot_hh,Mbh] or [Mdot_stb,Mdot_hh,Mbh,Mspin]
 
 Lagn_inputs = 'Lagn'; Lagn_params=['data/Lbol_AGN','data/mstars_bulge']
 
@@ -150,11 +156,6 @@ Lagn_inputs = 'Lagn'; Lagn_params=['data/Lbol_AGN','data/mstars_bulge']
 # - v_bulge: velocity of the bulge (km/s). 
 # If v_bulge is included the t_bulge is calculated only using rgas_bulge and v_bulge.
 Lagn_insta = True; Lagn_insta_params=None
-
-# Ratio of lifetime of AGN episode to bulge dynamical timescale. 
-# - The fiducial value used in Shark is 1.0.
-# - If is None we use c.fq as the weights.
-tau_fold = None
 
 ###################################################################
 ########  Filling factor and Cardelli's law parameters  ###########
@@ -316,7 +317,6 @@ for ivol in list_subvols:
             model_spec_agn=model_spec_agn,
             Lagn_inputs=Lagn_inputs, Lagn_params=Lagn_params,
             Lagn_insta=Lagn_insta, Lagn_insta_params=Lagn_insta_params,
-            tau_fold=tau_fold,
             infile_z0=infile_z0, redshift_previous=redshift_previous,
             extra_params=extra_params,
             extra_params_names=extra_params_names,
