@@ -145,7 +145,7 @@ model_spec_agn = 'feltre16'
 #            and, as an optional input, the BH spin, Mspin. 
 #            Lagn_params=[Mdot_stb,Mdot_hh,Mbh] or [Mdot_stb,Mdot_hh,Mbh,Mspin]
 
-Lagn_inputs = 'Griffin+19'; Lagn_params=[
+Lagn_inputs = 'Bravo+25'; Lagn_params=[
     'data/m_bh', 
     'data/bh_accretion_rate_hh', 
     'data/bh_accretion_rate_sb',
